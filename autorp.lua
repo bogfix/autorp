@@ -247,21 +247,24 @@ imgui.OnFrame(
         if imgui.Begin(u8'Управление отыгровками', renderWindow) then
             if imgui.BeginTabBar('Tabs') then
                 if imgui.BeginTabItem(u8'Информация') then
-                    imgui.Text(u8'Добро пожаловать в скрипт AutoRP!')
+                    imgui.CText(u8'Добро пожаловать в скрипт AutoRP!')
                     imgui.Separator()
-                    imgui.Text(u8'Автор: '.. AUTHOR)
-                    imgui.Text(u8'Версия: ' .. SCRIPT_VERSION)
-                    imgui.Text(u8'Дата создания: 01.03.2025')
+                    imgui.CText(u8'Автор: '.. AUTHOR)
+                    imgui.CText(u8'Версия: ' .. SCRIPT_VERSION)
+                    imgui.CText(u8'Дата создания: 01.03.2025')
                     imgui.Separator()
-                    imgui.Text(u8'Инструкция:')
+                    imgui.CText(u8'Инструкция:')
                     imgui.BulletText(u8'Используйте /arp для просмотра списка команд.')
                     imgui.BulletText(u8'Добавляйте новые отыгровки во вкладке "Добавить новую отыгровку".')
                     imgui.BulletText(u8'Редактируйте или удаляйте существующие команды во вкладках с их названиями.')
                     imgui.BulletText(u8'Импортируйте конфигурации через кнопку импорта.')
                     imgui.Separator()
-                    imgui.Text(u8'Связь с автором [DISCORD]: ') 
+                    imgui.CText(u8'Связь с автором [DISCORD]:') 
                     imgui.SameLine()
                     imgui.TextColored(imgui.ImVec4(0, 1, 0, 1), u8'bogfix')
+                    local calc = imgui.CalcTextSize(text)
+                    imgui.SetCursorPosX((imgui.GetWindowWidth() - calc.x) / 2.5)
+                    imgui.Link('https://t.me/jfmc18_bot',u8 'Бот больницы Jefferson [18]')
                     imgui.EndTabItem()
                 end
                 if imgui.BeginTabItem(u8'Добавить новую отыгровку') then
@@ -425,6 +428,24 @@ function theme() -- Chapo loh
     imgui.GetStyle().Colors[imgui.Col.NavWindowingHighlight]  = imgui.ImVec4(1.00, 1.00, 1.00, 0.70)
     imgui.GetStyle().Colors[imgui.Col.NavWindowingDimBg]      = imgui.ImVec4(0.80, 0.80, 0.80, 0.20)
     imgui.GetStyle().Colors[imgui.Col.ModalWindowDimBg]       = imgui.ImVec4(0.00, 0.00, 0.00, 0.70)
+end
+
+function imgui.CText(text)
+    local calc = imgui.CalcTextSize(text)
+    imgui.SetCursorPosX((imgui.GetWindowWidth() - calc.x) / 2)
+    imgui.Text(text)
+end
+
+function imgui.Link(link, text)
+	text = text or link
+	local tSize = imgui.CalcTextSize(text)
+	local p = imgui.GetCursorScreenPos()
+	local DL = imgui.GetWindowDrawList()
+	local col = { 0xFFFF7700, 0xFFFF9900 }
+	if imgui.InvisibleButton('##' .. link, tSize) then os.execute('explorer ' .. link) end
+	local color = imgui.IsItemHovered() and col[1] or col[2]
+	DL:AddText(p, color, text)
+	DL:AddLine(imgui.ImVec2(p.x, p.y + tSize.y), imgui.ImVec2(p.x + tSize.x, p.y + tSize.y), color)
 end
 
 -- Open FileManager
