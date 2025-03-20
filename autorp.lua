@@ -11,9 +11,9 @@ local MAX_CMD_SIZE = 64
 local MAX_DESC_SIZE = 128
 local MAX_STEPS_SIZE = 2048
 local AUTHOR = '[18]White_Gasparov [bfix]'
-local SCRIPT_VERSION = "1.0"
+local SCRIPT_VERSION = "1.1"
 
-local VERSION_URL = "https://raw.githubusercontent.com/bogfix/autorp/main/version.json"'
+local VERSION_URL = "https://raw.githubusercontent.com/bogfix/autorp/main/version.json"
 
 -- Глобальные переменные
 local renderWindow = imgui.new.bool(false)
