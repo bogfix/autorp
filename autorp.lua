@@ -11,7 +11,9 @@ local MAX_CMD_SIZE = 64
 local MAX_DESC_SIZE = 128
 local MAX_STEPS_SIZE = 2048
 local AUTHOR = '[18]White_Gasparov [bfix]'
-local SCRIPT_VERSION = "1.0.0"
+local SCRIPT_VERSION = "1.0"
+
+local VERSION_URL = "https://raw.githubusercontent.com/bogfix/autorp/main/version.json"'
 
 -- Глобальные переменные
 local renderWindow = imgui.new.bool(false)
@@ -29,6 +31,7 @@ local selectedCommand = imgui.new.int(0)
 local commands = {
     {cmd = 'arp', desc = 'Показать список команд для отыгровок'},
     {cmd = 'arpadd', desc = 'Добавить новую отыгровку'},
+    {cmd = 'arpupd', desc = 'Обновление скрипта до актуальной версии (если неактуальная)'},
 }
 local roleplays = {}
 
@@ -174,11 +177,40 @@ local function importConfig(filePath)
     showMessage('Конфигурация успешно импортирована.')
 end
 
+function update()
+    local raw = VERSION_URL
+    local dlstatus = require('moonloader').download_status
+    local requests = require('requests')
+    local f = {}
+    function f:getLastVersion()
+        local response = requests.get(raw)
+        if response.status_code == 200 then
+            return decodeJson(response.text)['last']
+        else
+            return 'UNKNOWN'
+        end
+    end
+    function f:download()
+        local response = requests.get(raw)
+        if response.status_code == 200 then
+            downloadUrlToFile(decodeJson(response.text)['url'], thisScript().path, function (id, status, p1, p2)
+                print('Скачиваю '..decodeJson(response.text)['url']..' в '..thisScript().path)
+                if status == dlstatus.STATUSEX_ENDDOWNLOAD then
+                    showMessage('Скрипт обновлен, перезагрузка...', -1)
+                    thisScript():reload()
+                end
+            end)
+        else
+            showMessage('Ошибка, невозможно установить обновление, код: '..response.status_code, -1)
+        end
+    end
+    return f
+end
 
 -- Основная функция
 function main()
     while not isSampAvailable() do wait(0) end
-
+    local lastver = update():getLastVersion()
     loadConfig()
     sampRegisterChatCommand('arp', showCommands)
     sampRegisterChatCommand('arpadd', function()
@@ -188,8 +220,15 @@ function main()
     for _, rp in ipairs(roleplays) do
         registerRoleplayCommand(rp)
     end
-
-    showMessage('{ffffff}Успешно загружен {363636}[Список команд - /arp | Создание команд - /arpadd]', 0x33ff33)
+    if sampIsLocalPlayerSpawned() then
+        if SCRIPT_VERSION ~= lastver then
+            sampRegisterChatCommand('arpupd', function()
+                update():download()
+            end)
+            showMessage('Вышло обновление скрипта ('..SCRIPT_VERSION..' -> '..lastver..'), введите /arpupd для обновления!', 0xfcba03)
+        end
+    end
+    showMessage('{ffffff}Успешно загружен {363636}[Список команд - /arp | Создание команд - /arpadd] {FFFFFF}| Версия - '..SCRIPT_VERSION, 0x33ff33)
     wait(-1)
 end
 
